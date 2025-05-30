@@ -1,0 +1,56 @@
+ 
+params:
+  type: object
+  properties:
+    FALAI_API_KEY:
+      type: string
+      description: Fal AI API Key
+  required:
+    - FALAI_API_KEY
+ 
+rest:
+  name: perplexity
+  port: 9593
+  endpoint: /rest
+ 
+npx:
+  command:
+    | FALAI_API_KEY={FALAI_API_KEY} npx -y @chatmcp/aiimagemultistyle
+  config:
+    | {
+        "mcpServers": {
+          "falai": {
+            "command": "npx",
+            "args": [
+              "-y",
+              "@chatmcp/aiimagemultistyle"
+            ],
+            "env": {
+              "FALAI_API_KEY": "YOUR_API_KEY_HERE"
+            }
+          }
+        }
+      }
+ 
+docker:
+  command:
+    | docker run -i --rm -e FALAI_API_KEY={FALAI_API_KEY} chatmcp/aiimagemultistyle
+  config:
+    | {
+        "mcpServers": {
+          "falai": {
+            "command": "docker",
+            "args": [
+              "run",
+              "-i",
+              "--rm",
+              "-e",
+              "FALAI_API_KEY",
+              "chatmcp/aiimagemultistyle"
+            ],
+            "env": {
+              "FALAI_API_KEY": "YOUR_API_KEY_HERE"
+            }
+          }
+        }
+      }
