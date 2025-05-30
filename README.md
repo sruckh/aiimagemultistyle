@@ -46,7 +46,7 @@ A Model Context Protocol (MCP) server for image generation and manipulation usin
 
 ```bash
 git clone [repository-url]
-cd mcp-falai
+cd aiimagemultistyle
 ```
 
 2. Install dependencies:
@@ -73,7 +73,7 @@ To use the MCP Image Generator server, add it to your `mcpServers` configuration
   "mcpServers": {
     "image-generator": {
       "command": "npx",
-      "args": ["-y", "mcp-falai"]
+      "args": ["-y", "aiimagemultistyle"]
     }
   }
 }
@@ -88,7 +88,7 @@ You can also specify additional configuration options:
       "command": "npx",
       "args": [
         "-y",
-        "mcp-falai",
+        "aiimagemultistyle",
         "--mode=rest",
         "--port=9593",
         "--endpoint=/rest"
