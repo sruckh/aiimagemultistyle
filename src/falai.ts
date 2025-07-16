@@ -65,19 +65,15 @@ export class FalAiClient {
 
       console.log("FAL.ai API response:", result);
 
-      // Download images and convert to Base64
-      const processedImagePromises = (result.data.images || []).map(async (image: any) => {
-        const imgUrl = typeof image === "object" ? image.url : image;
-        const { data, contentType } = await fetchImageAsBase64(imgUrl);
+      // Return image URLs for Claude Desktop to download
+      const processedImages = (result.data.images || []).map((image: any) => {
         return {
-          data,
-          contentType,
+          data: image.url,
+          contentType: image.content_type || "image/png", 
           width: image.width,
           height: image.height
         };
       });
-
-      const processedImages = await Promise.all(processedImagePromises);
 
       return {
         images: processedImages,

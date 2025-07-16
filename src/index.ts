@@ -13,6 +13,9 @@ import {
   ListToolsRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
 dotenv.config();
+
+// Enable verbose logging for schema validation
+process.env.LOG_LEVEL = process.env.LOG_LEVEL || "debug";
 const mode = getParamValue("mode") || "stdio";
 const port = getParamValue("port") || 9593;
 const endpoint = getParamValue("endpoint") || "/rest";
@@ -47,74 +50,6 @@ server.setRequestHandler(ListToolsRequestSchema, async (request) => {
         name: "generate_image",
         description:
           "Generate images using fal.ai with various styles and options.",
-        parameters: {
-          prompt: {
-            type: "string",
-            description: "The prompt to generate the image from",
-          },
-          style: {
-            type: "string",
-            enum: [
-              "ghibli-style",
-              "pixar-style",
-              "pokemon-style",
-              "genshin-impact-style",
-              "cyberpunk-style",
-              "one-piece-style",
-              "attack-on-titan-style",
-              "shinkai-makoto-style",
-              "sailor-moon-style",
-              "evangelion-style",
-              "disney-princess-style",
-              "kyoto-animation-style",
-              "dreamworks-animation-style",
-              "marvel-studios-style",
-              "dc-comics-style",
-              "kawaii-pastel-style",
-              "simpsons-style",
-              "dragon-ball-style",
-              "demon-slayer-style",
-              "warner-bros-animation-style",
-              "dark-fantasy-style",
-              "pixar-art-style",
-              "toei-animation-style",
-              "hayao-miyazaki-style",
-              "makoto-shinkai-style",
-              "katsuhiro-otomo-style",
-              "mamoru-hosoda-style",
-              "goro-miyazaki-style",
-              "masaaki-yuasa-style",
-              "shinichiro-ushijima-style",
-              "naoko-yamada-style",
-              "taichi-ishidate-style",
-              "isao-takahata-style",
-              "hiromasa-yonebayashi-style",
-              "japanese-anime-style",
-            ],
-            default: "ghibli-style",
-            description: "Image style",
-          },
-          num_images: {
-            type: "number",
-            minimum: 1,
-            maximum: 4,
-            default: 1,
-            description: "Number of images to generate (1-4)",
-          },
-          size: {
-            type: "string",
-            enum: [
-              "square",
-              "square_hd",
-              "portrait_4_3",
-              "portrait_16_9",
-              "landscape_4_3",
-              "landscape_16_9",
-            ],
-            default: "square_hd",
-            description: "Image size",
-          },
-        },
         inputSchema: {
           type: "object",
           properties: {
@@ -268,6 +203,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (params.name === "generate_image") {
       const { prompt, style, num_images, size } = params.arguments || {};
+      console.log("DEBUG: Input arguments received:", JSON.stringify(params.arguments, null, 2));
+      
       if (!prompt) {
         throw new Error("Prompt is required");
       }
@@ -277,19 +214,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         size: size || "square_hd",
       });
 
-      return {
+      // Return proper MCP content array format
+      const result = {
         content: [
           {
             type: "text",
-            text: `Successfully generated ${num_images} image(s) with style: ${style}`,
+            text: `Successfully generated ${response.images.length} image(s) with style: ${style || "ghibli-style"}`
           },
-          ...response.images.map(img => ({
-            type: "image",
-            data: img.data,
-            mimeType: img.contentType || "image/jpeg",
-          })),
-        ],
+          {
+            type: "text",
+            text: JSON.stringify({
+              images: response.images.map(img => ({
+                url: img.data,
+                width: img.width,
+                height: img.height,
+                content_type: img.contentType
+              })),
+              prompt: response.prompt,
+              seed: response.seed,
+              has_nsfw_concepts: response.hasNsfwConcepts
+            }, null, 2)
+          }
+        ]
       };
+      
+      console.log("DEBUG: Output result being returned:", JSON.stringify(result, null, 2));
+      return result;
     } else if (params.name === "upscale_image") {
       const { image_url } = params.arguments || {};
       if (!image_url) {
@@ -311,7 +261,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           },
           {
             type: "image",
-            data: [result.data.image.url],
+            data: result.data.image.url,
             mimeType: "image/jpeg",
           },
         ],
@@ -339,7 +289,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           },
           {
             type: "image",
-            data: [result.data.image.url],
+            data: result.data.image.url,
             mimeType: "image/jpeg",
           },
         ],
