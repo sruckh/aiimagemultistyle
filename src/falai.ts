@@ -1,4 +1,5 @@
 import { fal } from "@fal-ai/client";
+import { fetchImageAsBase64 } from "./utils/fetchImage.js";
 
 export type ImageStyle =
   | "realistic"
@@ -23,7 +24,7 @@ export interface GenerateImageOptions {
 }
 
 export interface GeneratedImage {
-  url: string;
+  data: string;
   width?: number;
   height?: number;
   contentType?: string;
@@ -64,19 +65,19 @@ export class FalAiClient {
 
       console.log("FAL.ai API response:", result);
 
-      // The result is already the final output
-      // 确保图片数组格式正确
-      const processedImages = (result.data.images || []).map((image: any) => {
-        // 如果图片是对象格式，直接返回
-        if (typeof image === "object" && image.url) {
-          return image;
-        }
-        // 如果图片是字符串（URL），转换为对象格式
+      // Download images and convert to Base64
+      const processedImagePromises = (result.data.images || []).map(async (image: any) => {
+        const imgUrl = typeof image === "object" ? image.url : image;
+        const { data, contentType } = await fetchImageAsBase64(imgUrl);
         return {
-          url: image,
-          contentType: "image/jpeg",
+          data,
+          contentType,
+          width: image.width,
+          height: image.height
         };
       });
+
+      const processedImages = await Promise.all(processedImagePromises);
 
       return {
         images: processedImages,

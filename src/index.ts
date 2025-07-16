@@ -283,11 +283,11 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             type: "text",
             text: `Successfully generated ${num_images} image(s) with style: ${style}`,
           },
-          {
+          ...response.images.map(img => ({
             type: "image",
-            data: response.images,
-            mimeType: "image/png",
-          },
+            data: img.data,
+            mimeType: img.contentType || "image/jpeg",
+          })),
         ],
       };
     } else if (params.name === "upscale_image") {
@@ -311,8 +311,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           },
           {
             type: "image",
-            data: [{ url: result.data.image.url }],
-            mimeType: "image/png",
+            data: [result.data.image.url],
+            mimeType: "image/jpeg",
           },
         ],
       };
@@ -339,8 +339,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           },
           {
             type: "image",
-            data: [{ url: result.data.image.url }],
-            mimeType: "image/png",
+            data: [result.data.image.url],
+            mimeType: "image/jpeg",
           },
         ],
       };

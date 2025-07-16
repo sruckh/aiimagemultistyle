@@ -1,0 +1,21 @@
+services:
+  aiimagemultistyle:
+    build: .
+    expose:
+      - "9593"
+    container_name: aiimagemultistyle
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+    networks:
+      - shared_net
+    restart: unless-stopped
+    stdin_open: true
+    tty: true
+    # Exposed only on shared_net for nginx proxy manager access
+    command: node build/index.js --mode=rest --port=9593 --endpoint=/rest
+
+networks:
+  shared_net:
+    external: true
